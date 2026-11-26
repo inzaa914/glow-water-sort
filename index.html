@@ -1,0 +1,2968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#140f2d" />
+  <title>Glow Water Sort Puzzle — InzaaGames</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ==========================================================================
+       1. MIDNIGHT PURPLE-NAVY STUDIO DESIGN TOKENS
+       ========================================================================== */
+    :root {
+      --bg-deep: #0f0a24;
+      --bg-mid: #171036;
+      --bg-glow: #251954;
+      --btn-inner: #211547;
+      --btn-ring: #9d4edd;
+      --text-white: #ffffff;
+      --text-muted: #b8addc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 28%, var(--bg-glow) 0%, var(--bg-mid) 48%, var(--bg-deep) 100%);
+      color: var(--text-white);
+      touch-action: manipulation;
+    }
+
+    /* Organic background waves */
+    .bg-waves {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-waves svg {
+      width: 100%;
+      height: 100%;
+      opacity: 0.42;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-bottom: max(14px, env(safe-area-inset-bottom));
+    }
+
+    /* ==========================================================================
+       2. TOP HEADER BAR (MENU | COIN PILL | RANKING + SOUND + RESTART)
+       ========================================================================== */
+    .hud-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 12px 6px;
+      width: 100%;
+      z-index: 10;
+      gap: 6px;
+    }
+
+    .circle-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--btn-inner);
+      border: 2px solid var(--btn-ring);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(13, 8, 33, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+      transition: transform 0.14s ease, box-shadow 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .circle-btn:active {
+      transform: scale(0.91);
+    }
+
+    .hud-right-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .coin-pill {
+      height: 35px;
+      padding: 0 12px 0 7px;
+      border-radius: 999px;
+      background: rgba(29, 21, 58, 0.92);
+      border: 1.5px solid rgba(139, 108, 246, 0.32);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      transition: transform 0.14s ease;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .coin-pill:active {
+      transform: scale(0.95);
+    }
+
+    .coin-emblem {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #fff07c 0%, #fbbf24 55%, #d97706 100%);
+      border: 1.5px solid #fef08a;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #78350f;
+      font-size: 11px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .coin-count {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      color: #e2d9ff;
+      white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       3. CENTERED LEVEL TITLE
+       ========================================================================== */
+    .level-header {
+      text-align: center;
+      padding: 6px 16px 2px;
+      z-index: 5;
+    }
+
+    .level-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: #ffffff;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(167, 139, 250, 0.16);
+    }
+
+    /* ==========================================================================
+       4. MAIN CANVAS STAGE
+       ========================================================================== */
+    .stage-wrap {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas#gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       5. BOTTOM ROUNDED CAPSULE ACTION DOCK
+       ========================================================================== */
+    .dock-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 16px 8px;
+      z-index: 10;
+    }
+
+    .dock-capsule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 12px 18px;
+      border-radius: 30px;
+      background: rgba(34, 24, 68, 0.88);
+      border: 1.5px solid rgba(157, 78, 221, 0.28);
+      box-shadow: 0 14px 32px rgba(8, 5, 22, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .dock-btn {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      border-radius: 19px;
+      background: #23164a;
+      border: 2.2px solid #9d4edd;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(10, 6, 28, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.14);
+      transition: transform 0.13s ease, filter 0.15s ease;
+    }
+
+    .dock-btn:active {
+      transform: scale(0.91);
+    }
+
+    .dock-btn.gold-btn {
+      background: linear-gradient(180deg, #ffe234 0%, #f59e0b 100%);
+      border: 2.2px solid #fff380;
+      color: #451a03;
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.65);
+    }
+
+    .dock-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #1e1342;
+      font-size: 11.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    .ad-safe-slot {
+      width: 100%;
+      min-height: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ==========================================================================
+       5B. INZAAGAMES ANIMATED STUDIO SPLASH LOGO (WITH FAIL-SAFE AUTO-DISMISS)
+       ========================================================================== */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 42%, #2c1663 0%, #160c36 58%, #0c0721 100%);
+      transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.4s ease;
+      cursor: pointer;
+      animation: splashAutoFadeOut 0.45s ease 1.85s forwards;
+    }
+
+    .splash-screen.hidden {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    @keyframes splashAutoFadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+
+    .splash-emblem-wrap {
+      position: relative;
+      width: 112px;
+      height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      animation: splashFloat 1.6s ease-in-out infinite alternate;
+    }
+
+    .splash-aura {
+      position: absolute;
+      inset: -14px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(56, 189, 248, 0.18) 50%, transparent 72%);
+      filter: blur(10px);
+      animation: pulseGlow 1.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes splashFloat {
+      from { transform: translateY(4px) scale(0.97); }
+      to   { transform: translateY(-6px) scale(1.03); }
+    }
+
+    @keyframes pulseGlow {
+      from { opacity: 0.65; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1.1); }
+    }
+
+    .splash-liquid-rise {
+      transform-origin: center bottom;
+      animation: liquidFillLogo 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes liquidFillLogo {
+      from { transform: scaleY(0.15); opacity: 0.4; }
+      to   { transform: scaleY(1); opacity: 1; }
+    }
+
+    .splash-brand {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      background: linear-gradient(135deg, #ffffff 15%, #e9d5ff 50%, #38bdf8 90%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 6px 26px rgba(139, 92, 246, 0.45);
+      animation: brandSlideUp 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+    }
+
+    .splash-sub {
+      margin-top: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 2.6px;
+      text-transform: uppercase;
+      color: #b8addc;
+      opacity: 0.88;
+      animation: brandSlideUp 0.65s 0.08s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+    }
+
+    .splash-skip {
+      position: absolute;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(216, 205, 255, 0.65);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    @keyframes brandSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       6. FULL-SCREEN "EXCELLENT!" VICTORY OVERLAY
+       ========================================================================== */
+    .victory-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(circle at 50% 42%, #3b1c7a 0%, #241152 55%, #160a36 100%);
+      padding-top: max(14px, env(safe-area-inset-top));
+      padding-bottom: max(54px, env(safe-area-inset-bottom));
+      animation: fadeInOverlay 0.28s ease;
+    }
+
+    .victory-screen.open {
+      display: flex;
+    }
+
+    @keyframes fadeInOverlay {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    canvas#confettiCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .victory-top-bar {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      justify-content: center;
+      padding-top: 6px;
+    }
+
+    .victory-center {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      transform: translateY(-10px);
+    }
+
+    .victory-title {
+      font-size: 44px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.4px;
+      text-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+      animation: bounceScale 0.48s cubic-bezier(0.2, 1.25, 0.35, 1);
+    }
+
+    .victory-reward-tag {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      font-size: 13px;
+      font-weight: 800;
+      color: #fde047;
+    }
+
+    @keyframes bounceScale {
+      0%   { opacity: 0; transform: scale(0.6); }
+      70%  { opacity: 1; transform: scale(1.06); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .victory-actions {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+    }
+
+    .continue-pill-btn {
+      width: 100%;
+      height: 58px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(180deg, #ffe234 0%, #f59e0b 100%);
+      color: #3b1800;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 26px rgba(245, 158, 11, 0.48), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+      transition: transform 0.14s ease;
+    }
+
+    .continue-pill-btn:active {
+      transform: scale(0.95);
+    }
+
+    .bonus-ad-link {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e9d5ff;
+      padding: 9px 18px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bonus-ad-link:active {
+      transform: scale(0.95);
+    }
+
+    /* ==========================================================================
+       7. MODALS (LEVELS, SKINS, POWERUP REFILL, CHAI SUPPORT)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 6, 22, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 70;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 390px;
+      border-radius: 26px;
+      background: #1d143d;
+      border: 1.5px solid rgba(157, 78, 221, 0.36);
+      padding: 20px;
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.65);
+      animation: popModal 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+
+    @keyframes popModal {
+      from { opacity: 0; transform: scale(0.92) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(157, 78, 221, 0.4);
+      background: #291c54;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .level-map-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      padding-right: 2px;
+    }
+
+    .lvl-node {
+      aspect-ratio: 1;
+      border-radius: 14px;
+      background: #271a52;
+      border: 1.5px solid rgba(157, 78, 221, 0.28);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .lvl-node.cleared {
+      border-color: rgba(52, 211, 153, 0.55);
+      background: rgba(16, 185, 129, 0.16);
+    }
+
+    .lvl-node.current {
+      border-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.22);
+      color: #fde047;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .lvl-node.locked {
+      opacity: 0.36;
+      cursor: not-allowed;
+    }
+
+    .skin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .skin-card {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #271a52;
+      border: 1.5px solid rgba(157, 78, 221, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .skin-card.active {
+      border-color: #34d399;
+      background: rgba(16, 185, 129, 0.18);
+    }
+
+    .modal-action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pill-mini-btn {
+      flex: 1;
+      height: 40px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(157, 78, 221, 0.35);
+      background: #281b54;
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .pill-mini-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ==========================================================================
+       8. GLOBAL RANKING / LEADERBOARD STYLES
+       ========================================================================== */
+    .rank-summary-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, 0.16);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      color: #fde047;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .profile-edit-card {
+      background: #25184f;
+      border: 1.5px solid rgba(157, 78, 221, 0.32);
+      border-radius: 16px;
+      padding: 11px;
+      margin-bottom: 12px;
+    }
+
+    .profile-input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .rank-input {
+      width: 100%;
+      height: 36px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(157, 78, 221, 0.36);
+      background: #170f33;
+      color: #ffffff;
+      padding: 0 10px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .rank-input:focus {
+      border-color: #fbbf24;
+    }
+
+    .rank-save-btn {
+      width: 100%;
+      height: 34px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(180deg, #ffe234 0%, #f59e0b 100%);
+      color: #3b1800;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .rank-save-btn:active {
+      transform: scale(0.97);
+    }
+
+    .leaderboard-list {
+      max-height: 235px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding-right: 2px;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 11px;
+      border-radius: 13px;
+      background: #25184e;
+      border: 1.5px solid rgba(157, 78, 221, 0.22);
+      gap: 8px;
+    }
+
+    .lb-row.is-you {
+      background: linear-gradient(90deg, rgba(168, 85, 247, 0.28) 0%, rgba(251, 191, 36, 0.18) 100%);
+      border-color: #fbbf24;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.24);
+    }
+
+    .lb-rank-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: #180f36;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #d8cdff;
+      flex-shrink: 0;
+    }
+
+    .lb-row.top-1 .lb-rank-badge {
+      background: linear-gradient(180deg, #ffe234, #f59e0b);
+      color: #3b1800;
+    }
+
+    .lb-row.top-2 .lb-rank-badge {
+      background: linear-gradient(180deg, #f1f5f9, #94a3b8);
+      color: #0f172a;
+    }
+
+    .lb-row.top-3 .lb-rank-badge {
+      background: linear-gradient(180deg, #fdba74, #c2410c);
+      color: #ffffff;
+    }
+
+    .lb-player-info {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .lb-name {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-loc {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-lvl-pill {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #7dd3fc;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .toast {
+      position: fixed;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      background: #2c1e5e;
+      border: 1.5px solid rgba(157, 78, 221, 0.55);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      z-index: 90;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- ORGANIC MIDNIGHT STUDIO BACKGROUND WAVES -->
+  <div class="bg-waves" aria-hidden="true">
+    <svg viewBox="0 0 400 800" preserveAspectRatio="none">
+      <path d="M-40,180 C110,120 260,290 440,210 L440,560 C270,630 120,470 -40,540 Z" fill="#1e1445" />
+      <circle cx="320" cy="140" r="140" fill="#231752" opacity="0.55" />
+      <circle cx="80" cy="650" r="170" fill="#1a113d" opacity="0.7" />
+    </svg>
+  </div>
+
+  <!-- INZAAGAMES STUDIO SPLASH LOGO ON GAME OPEN -->
+  <div class="splash-screen" id="splashScreen" role="button" aria-label="InzaaGames Splash Screen">
+    <div class="splash-emblem-wrap">
+      <div class="splash-aura"></div>
+      <svg width="96" height="96" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <linearGradient id="logoGlass" x1="20" y1="10" x2="80" y2="92" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#e9d5ff" stop-opacity="0.95" />
+            <stop offset="50%" stop-color="#a855f7" stop-opacity="0.65" />
+            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.9" />
+          </linearGradient>
+          <linearGradient id="logoLiquid" x1="25" y1="44" x2="75" y2="88" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8" />
+            <stop offset="52%" stop-color="#a855f7" />
+            <stop offset="100%" stop-color="#f43f5e" />
+          </linearGradient>
+          <clipPath id="flaskClip">
+            <path d="M41 18 H59 V33 L73 48 C77 52 78 58 78 65 V76 C78 84 71 90 62 90 H38 C29 90 22 84 22 76 V65 C22 58 23 52 27 48 L41 33 V18 Z" />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#flaskClip)">
+          <rect class="splash-liquid-rise" x="18" y="45" width="64" height="48" fill="url(#logoLiquid)" />
+          <ellipse cx="50" cy="46" rx="26" ry="4" fill="#bae6fd" fill-opacity="0.65" />
+          <circle cx="38" cy="64" r="2.2" fill="#ffffff" fill-opacity="0.75" />
+          <circle cx="60" cy="73" r="1.8" fill="#fde047" fill-opacity="0.85" />
+          <circle cx="49" cy="56" r="1.5" fill="#ffffff" fill-opacity="0.7" />
+        </g>
+        <path d="M41 18 H59 V33 L73 48 C77 52 78 58 78 65 V76 C78 84 71 90 62 90 H38 C29 90 22 84 22 76 V65 C22 58 23 52 27 48 L41 33 V18 Z" stroke="url(#logoGlass)" stroke-width="3.2" />
+        <rect x="37" y="13" width="26" height="6" rx="3" fill="#2c1963" stroke="#e9d5ff" stroke-width="2.4" />
+        <path d="M31 53 C29 58 29 66 30 75" stroke="#ffffff" stroke-opacity="0.45" stroke-width="2.6" stroke-linecap="round" />
+        <path d="M81 22 L83 28 L89 30 L83 32 L81 38 L79 32 L73 30 L79 28 Z" fill="#fde047" />
+      </svg>
+    </div>
+    <div class="splash-brand">InzaaGames</div>
+    <div class="splash-sub">Glow Water Sort</div>
+    <div class="splash-skip">Tap to Start</div>
+  </div>
+
+  <div class="app-shell">
+    <!-- TOP HEADER BAR -->
+    <header class="hud-top">
+      <button class="circle-btn" id="btnMenu" aria-label="Menu & Levels">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
+        </svg>
+      </button>
+
+      <div class="coin-pill" id="btnCoinPill" title="Open Rewards & Shop">
+        <span class="coin-emblem">★</span>
+        <span class="coin-count" id="hudCoins">800</span>
+      </div>
+
+      <div class="hud-right-group">
+        <button class="circle-btn" id="btnRanking" aria-label="Global Ranking" style="border-color:#fbbf24;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" fill="rgba(253,224,71,0.2)"></path>
+          </svg>
+        </button>
+
+        <button class="circle-btn" id="btnSound" aria-label="Toggle Sound">
+          <svg id="iconSoundOn" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="iconSoundOff" style="display:none;" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <button class="circle-btn" id="btnRestart" aria-label="Restart Level">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- CENTERED LEVEL TITLE (TAP TO OPEN LEVEL MAP) -->
+    <div class="level-header">
+      <h1 class="level-title" id="hudLevelTitle">Level 1</h1>
+    </div>
+
+    <!-- MAIN BOTTLE CANVAS STAGE -->
+    <main class="stage-wrap" id="stageWrap">
+      <canvas id="gameCanvas"></canvas>
+    </main>
+
+    <!-- BOTTOM CAPSULE ACTION DOCK -->
+    <footer class="dock-wrap">
+      <div class="dock-capsule">
+        <!-- 1. HINT BUTTON -->
+        <button class="dock-btn" id="btnHint" aria-label="Smart Move Hint">
+          <span class="dock-badge" id="badgeHint">2</span>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" fill="rgba(192,132,252,0.18)"></path>
+          </svg>
+        </button>
+
+        <!-- 2. UNDO BUTTON -->
+        <button class="dock-btn" id="btnUndo" aria-label="Undo Move">
+          <span class="dock-badge" id="badgeUndo">2</span>
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 14L4 9l5-5"></path>
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path>
+          </svg>
+        </button>
+
+        <!-- 3. EXTRA BOTTLE BUTTON -->
+        <button class="dock-btn gold-btn" id="btnExtraBottle" aria-label="Unlock Extra Bottle">
+          <span class="dock-badge" id="badgeExtra">2</span>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 2h4"></path>
+            <path d="M10 2v4l-2.5 2.5A2 2 0 0 0 7 9.9V19a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V9.9a2 2 0 0 0-.5-1.4L14 6V2" fill="rgba(255,255,255,0.35)"></path>
+            <circle cx="12" cy="14" r="3.5" fill="#451a03" stroke="none"></circle>
+            <path d="M12 12.4v3.2M10.4 14h3.2" stroke="#ffe234" stroke-width="1.8"></path>
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+    <!-- SAFE ADSTERRA BANNER SLOT -->
+    <div class="ad-safe-slot" id="adsterraBannerSlot"></div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toastMsg"></div>
+
+  <!-- FULL-SCREEN "EXCELLENT!" VICTORY OVERLAY -->
+  <section class="victory-screen" id="victoryScreen">
+    <canvas id="confettiCanvas"></canvas>
+    <div class="victory-top-bar">
+      <div class="coin-pill">
+        <span class="coin-emblem">★</span>
+        <span class="coin-count" id="victoryCoins">825</span>
+      </div>
+    </div>
+
+    <div class="victory-center">
+      <h2 class="victory-title">Excellent!</h2>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:7px; margin-top:10px;">
+        <div class="victory-reward-tag" style="margin-top:0;" id="victoryRewardText">★ +25 Coins</div>
+        <div class="rank-summary-pill" id="victoryRankText">🏆 Global Rank #12</div>
+      </div>
+    </div>
+
+    <div class="victory-actions">
+      <button class="continue-pill-btn" id="btnContinueLevel">Continue</button>
+      <button class="bonus-ad-link" id="btnVictoryBonusAd">🎬 Watch Ad for +100 Bonus Coins</button>
+    </div>
+  </section>
+
+  <!-- MODAL: LEVEL MAP, BOTTLE SKINS & REWARDS -->
+  <div class="modal-backdrop" id="modalMenu">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Levels & Bottle Styles</h2>
+        <button class="close-btn" data-close="modalMenu">&times;</button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px;">Select Level</span>
+        <span style="font-size:11px; font-weight:800; color:#34d399;" id="unlockedStatusText">Cleared: 0</span>
+      </div>
+      <div class="level-map-grid" id="levelMapGrid"></div>
+
+      <p style="font-size:11px; font-weight:800; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.6px;">Bottle Shapes</p>
+      <div class="skin-grid" id="skinSelector"></div>
+
+      <div class="modal-action-row" style="flex-wrap:wrap;">
+        <button class="pill-mini-btn" id="btnMenuRanking" style="flex-basis:100%; border-color:#fbbf24; color:#fde047;">🏆 Global Ranking Leaderboard</button>
+        <button class="pill-mini-btn" id="btnDailyBonus">🎁 Daily +75</button>
+        <button class="pill-mini-btn" id="btnFreeCoinsAd">🎬 +100 Coins</button>
+        <button class="pill-mini-btn" id="btnOpenChai">☕ Buy a Chai</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GLOBAL RANKING / LEADERBOARD -->
+  <div class="modal-backdrop" id="modalRanking">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Global Ranking</h2>
+        <button class="close-btn" data-close="modalRanking">&times;</button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="rank-summary-pill" id="yourRankBadge">Your Rank: #15</span>
+        <span style="font-size:11px; font-weight:800; color:#7dd3fc;" id="yourClearedBadge">Cleared: LVL 0</span>
+      </div>
+
+      <div class="profile-edit-card">
+        <div class="profile-input-row">
+          <input type="text" id="inputPlayerName" class="rank-input" maxlength="18" placeholder="Your Username" />
+          <input type="text" id="inputPlayerLocation" class="rank-input" maxlength="24" placeholder="State, Country" />
+        </div>
+        <button class="rank-save-btn" id="btnSaveRankProfile">Save Profile & Update Rank</button>
+      </div>
+
+      <div class="leaderboard-list" id="leaderboardList"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: REFILL BOOSTER (HINT / UNDO / EXTRA BOTTLE) -->
+  <div class="modal-backdrop" id="modalRefill">
+    <div class="modal-card" style="text-align:center;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="refillTitle">Refill Booster</h2>
+        <button class="close-btn" data-close="modalRefill">&times;</button>
+      </div>
+      <p id="refillDesc" style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+        Out of charges! Refill +2 charges using coins or watch a short ad.
+      </p>
+      <button class="continue-pill-btn" style="height:48px; font-size:15px; margin-bottom:10px;" id="btnRefillWithCoins">
+        Buy +2 for 100 ★
+      </button>
+      <button class="pill-mini-btn" style="width:100%; height:44px; font-size:13px;" id="btnRefillWithAd">
+        🎬 Watch Ad for +2 Free
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: BUY A CHAI SUPPORT (SAFE CLIPBOARD COPY FOR ANDROID WEBVIEW) -->
+  <div class="modal-backdrop" id="modalChai">
+    <div class="modal-card" style="text-align:center;">
+      <div class="modal-header">
+        <h2 class="modal-title">☕ Support InzaaGames</h2>
+        <button class="close-btn" data-close="modalChai">&times;</button>
+      </div>
+      <p style="font-size:13px; color:var(--text-muted); line-height:1.55; margin-bottom:14px;">
+        Love playing Glow Water Sort Puzzle? Support indie development with a cup of chai using our UPI ID below:
+      </p>
+      <div style="padding:12px; border-radius:14px; background:#271a52; border:1.5px solid rgba(157,78,221,0.35); font-size:15px; font-weight:800; color:#fde047; margin-bottom:14px;">
+        inzaagames@upi
+      </div>
+      <button class="continue-pill-btn" style="height:48px; font-size:15px;" id="btnCopyUpi">Copy UPI ID</button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * 1. SAFE STORAGE WRAPPER (PREVENTS SANDBOX / WEBVIEW STORAGE CRASHES)
+     * ============================================================================
+     */
+    const memoryStorage = {};
+    const safeStorage = {
+      getItem(key) {
+        try {
+          return window.localStorage.getItem(key);
+        } catch (e) {
+          return Object.prototype.hasOwnProperty.call(memoryStorage, key) ? memoryStorage[key] : null;
+        }
+      },
+      setItem(key, val) {
+        memoryStorage[key] = String(val);
+        try {
+          window.localStorage.setItem(key, String(val));
+        } catch (e) {
+          // Silently fall back to in-memory storage in restricted WebViews
+        }
+      }
+    };
+
+    /**
+     * ============================================================================
+     * 2. LIQUID PALETTE & BOTTLE SKINS
+     * ============================================================================
+     */
+    const CAPACITY = 4;
+
+    const LIQUID_COLORS = [
+      { id: 'cyan',     top: '#5ce1ff', mid: '#00b4d8', deep: '#0077b6', spark: '#e0fbfc' },
+      { id: 'gold',     top: '#ffe64d', mid: '#f59e0b', deep: '#b45309', spark: '#fffbeb' },
+      { id: 'magenta',  top: '#ff5c8a', mid: '#e11d48', deep: '#881337', spark: '#ffe4e6' },
+      { id: 'emerald',  top: '#4ade80', mid: '#10b981', deep: '#065f46', spark: '#dcfce7' },
+      { id: 'violet',   top: '#c084fc', mid: '#9333ea', deep: '#581c87', spark: '#f3e8ff' },
+      { id: 'coral',    top: '#fb923c', mid: '#ea580c', deep: '#9a3412', spark: '#ffedd5' },
+      { id: 'cobalt',   top: '#60a5fa', mid: '#2563eb', deep: '#1e3a8a', spark: '#dbeafe' },
+      { id: 'lime',     top: '#bef264', mid: '#84cc16', deep: '#3f6212', spark: '#ecfccb' },
+      { id: 'teal',     top: '#2dd4bf', mid: '#0d9488', deep: '#115e59', spark: '#ccfbf1' },
+      { id: 'rose',     top: '#f472b6', mid: '#db2777', deep: '#831843', spark: '#fce7f3' },
+      { id: 'indigo',   top: '#818cf8', mid: '#4f46e5', deep: '#312e81', spark: '#e0e7ff' },
+      { id: 'amber',    top: '#fcd34d', mid: '#d97706', deep: '#78350f', spark: '#fef3c7' }
+    ];
+
+    const COLOR_MAP = Object.fromEntries(LIQUID_COLORS.map(c => [c.id, c]));
+
+    const BOTTLE_SKINS = [
+      { id: 'apothecary', name: 'Classic Potion',  cost: 0 },
+      { id: 'round',      name: 'Crystal Orb',     cost: 150 },
+      { id: 'diamond',    name: 'Royal Amphora',   cost: 300 },
+      { id: 'tube',       name: 'Slim Lab Vial',   cost: 500 }
+    ];
+
+    /**
+     * ============================================================================
+     * 3. CRISP CASCADING WATERDROP ("PLIP-PLIP-PLIP") WEB AUDIO ENGINE
+     * ============================================================================
+     */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      ensureContext() {
+        if (!this.enabled) return null;
+        try {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+          return this.ctx;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      playGlassTap(select = true) {
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(select ? 920 : 640, now);
+          osc.frequency.exponentialRampToValueAtTime(select ? 1380 : 430, now + 0.075);
+          gain.gain.setValueAtTime(0.11, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        } catch (e) {}
+      }
+
+      // Single crisp resonant water droplet ("plip") with upward pitch sweep
+      spawnWaterDrop(ctx, time, baseFreq, volume = 0.145, dropDur = 0.064) {
+        const osc = ctx.createOscillator();
+        const harmonic = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const harmGain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(baseFreq * 0.72, time);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.48, time + dropDur);
+
+        harmonic.type = 'triangle';
+        harmonic.frequency.setValueAtTime(baseFreq * 1.44, time);
+        harmonic.frequency.exponentialRampToValueAtTime(baseFreq * 2.35, time + dropDur * 0.85);
+
+        gain.gain.setValueAtTime(0.0008, time);
+        gain.gain.linearRampToValueAtTime(volume, time + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0008, time + dropDur);
+
+        harmGain.gain.setValueAtTime(0.0005, time);
+        harmGain.gain.linearRampToValueAtTime(volume * 0.24, time + 0.006);
+        harmGain.gain.exponentialRampToValueAtTime(0.0005, time + dropDur * 0.75);
+
+        osc.connect(gain);
+        harmonic.connect(harmGain);
+        gain.connect(ctx.destination);
+        harmGain.connect(ctx.destination);
+
+        osc.start(time);
+        osc.stop(time + dropDur + 0.01);
+        harmonic.start(time);
+        harmonic.stop(time + dropDur + 0.01);
+      }
+
+      // Rhythmic cascade of water droplets rising in pitch (~460 Hz -> ~980 Hz) as bottle fills
+      playWaterPour(durationSec, startFillRatio, endFillRatio) {
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          const dur = Math.max(0.24, durationSec);
+
+          const dropInterval = 0.048;
+          const totalDrops = Math.max(4, Math.floor(dur / dropInterval));
+
+          for (let i = 0; i < totalDrops; i++) {
+            const progress = totalDrops > 1 ? i / (totalDrops - 1) : 1;
+            const currentFill = startFillRatio + (endFillRatio - startFillRatio) * progress;
+            const jitter = (Math.random() - 0.5) * 0.012;
+            const dropTime = Math.max(now, now + i * dropInterval + jitter);
+
+            const pitch = 460 + currentFill * 460 + (Math.random() - 0.5) * 32;
+            const envelope = i === 0 || i === totalDrops - 1 ? 0.11 : 0.145;
+            this.spawnWaterDrop(ctx, dropTime, pitch, envelope, 0.064);
+          }
+
+          // Final soft settling droplet right as stream ends
+          const finalFill = Math.min(1, endFillRatio);
+          this.spawnWaterDrop(ctx, now + dur * 0.96, 540 + finalFill * 440, 0.12, 0.082);
+        } catch (e) {}
+      }
+
+      playCorkAndChime() {
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          const popOsc = ctx.createOscillator();
+          const popGain = ctx.createGain();
+          popOsc.type = 'triangle';
+          popOsc.frequency.setValueAtTime(210, now);
+          popOsc.frequency.exponentialRampToValueAtTime(520, now + 0.06);
+          popGain.gain.setValueAtTime(0.16, now);
+          popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+          popOsc.connect(popGain);
+          popGain.connect(ctx.destination);
+          popOsc.start(now);
+          popOsc.stop(now + 0.08);
+
+          [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            const t0 = now + 0.04 + idx * 0.055;
+            osc.frequency.setValueAtTime(freq, t0);
+            g.gain.setValueAtTime(0.08, t0);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.28);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(t0);
+            osc.stop(t0 + 0.3);
+          });
+        } catch (e) {}
+      }
+
+      playVictoryFanfare() {
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'triangle';
+            const t0 = now + i * 0.08;
+            osc.frequency.setValueAtTime(freq, t0);
+            g.gain.setValueAtTime(0.11, t0);
+            g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.42);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(t0);
+            osc.stop(t0 + 0.45);
+          });
+        } catch (e) {}
+      }
+    }
+
+    const sfx = new SoundEngine();
+
+    /**
+     * ============================================================================
+     * 4. GAME STATE & PERSISTENCE (PRESERVES CLEARED LEVELS, COINS & PROFILE)
+     * ============================================================================
+     */
+    const STORAGE_KEY = 'inzaagames_glow_watersort_v2';
+
+    const state = {
+      level: 1,
+      maxUnlockedLevel: 1,
+      coins: 800,
+      hintsLeft: 2,
+      undosLeft: 2,
+      extraChargesLeft: 2,
+      skin: 'apothecary',
+      unlockedSkins: ['apothecary'],
+      lastDailyDate: '',
+      playerName: 'InzaaPlayer',
+      playerLocation: 'Jharkhand, India',
+      tubes: [],
+      initialTubes: [],
+      history: [],
+      ghostUnlocked: false,
+      extraBottlesAdded: 0,
+      selectedIndex: -1,
+      hintPair: null,
+      corkAnims: {},
+      bottleRipples: {},
+      anim: null,
+      particles: [],
+      tubeRects: [],
+      ghostRect: null
+    };
+
+    function saveProgress() {
+      const payload = {
+        level: state.level,
+        maxUnlockedLevel: state.maxUnlockedLevel,
+        coins: state.coins,
+        hintsLeft: state.hintsLeft,
+        undosLeft: state.undosLeft,
+        extraChargesLeft: state.extraChargesLeft,
+        skin: state.skin,
+        unlockedSkins: state.unlockedSkins,
+        lastDailyDate: state.lastDailyDate,
+        playerName: state.playerName,
+        playerLocation: state.playerLocation,
+        soundEnabled: sfx.enabled
+      };
+      safeStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function loadProgress() {
+      try {
+        const raw = safeStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (typeof d.level === 'number' && d.level >= 1) state.level = d.level;
+          if (typeof d.maxUnlockedLevel === 'number' && d.maxUnlockedLevel >= 1) {
+            state.maxUnlockedLevel = Math.max(d.maxUnlockedLevel, state.level);
+          }
+          if (typeof d.coins === 'number') state.coins = d.coins;
+          if (typeof d.hintsLeft === 'number') state.hintsLeft = d.hintsLeft;
+          if (typeof d.undosLeft === 'number') state.undosLeft = d.undosLeft;
+          if (typeof d.extraChargesLeft === 'number') state.extraChargesLeft = d.extraChargesLeft;
+          if (typeof d.skin === 'string') state.skin = d.skin;
+          if (Array.isArray(d.unlockedSkins) && d.unlockedSkins.length) state.unlockedSkins = d.unlockedSkins;
+          if (typeof d.lastDailyDate === 'string') state.lastDailyDate = d.lastDailyDate;
+          if (typeof d.playerName === 'string' && d.playerName.trim()) state.playerName = d.playerName.trim();
+          if (typeof d.playerLocation === 'string' && d.playerLocation.trim()) state.playerLocation = d.playerLocation.trim();
+          if (typeof d.soundEnabled === 'boolean') sfx.enabled = d.soundEnabled;
+        }
+      } catch (e) {}
+    }
+
+    /**
+     * ============================================================================
+     * 4B. GLOBAL RANKING / LEADERBOARD ENGINE (OFFLINE + OPTIONAL FIREBASE HOOK)
+     * ============================================================================
+     */
+    const FIREBASE_DB_URL = '';
+
+    const SEEDED_PLAYERS = [
+      { id: 'p1',  name: 'AaravX_Pro',     loc: 'Maharashtra, India',   cleared: 145, coins: 9400 },
+      { id: 'p2',  name: 'RiyaSharma',     loc: 'Delhi, India',         cleared: 128, coins: 8250 },
+      { id: 'p3',  name: 'LiamCarter',     loc: 'Texas, USA',           cleared: 112, coins: 7600 },
+      { id: 'p4',  name: 'ZaidKhan_JH',    loc: 'Jharkhand, India',     cleared: 96,  coins: 6850 },
+      { id: 'p5',  name: 'AnanyaV',        loc: 'Karnataka, India',     cleared: 84,  coins: 5900 },
+      { id: 'p6',  name: 'HarutoKen',      loc: 'Tokyo, Japan',         cleared: 73,  coins: 5200 },
+      { id: 'p7',  name: 'RohanDas',       loc: 'West Bengal, India',   cleared: 61,  coins: 4450 },
+      { id: 'p8',  name: 'SnehaPatel',     loc: 'Gujarat, India',       cleared: 52,  coins: 3900 },
+      { id: 'p9',  name: 'OliverSmith',    loc: 'London, UK',           cleared: 44,  coins: 3400 },
+      { id: 'p10', name: 'KabirVerma',     loc: 'Uttar Pradesh, India', cleared: 36,  coins: 2950 },
+      { id: 'p11', name: 'MeeraNair',      loc: 'Kerala, India',        cleared: 29,  coins: 2450 },
+      { id: 'p12', name: 'AdityaRao',      loc: 'Telangana, India',     cleared: 22,  coins: 1980 },
+      { id: 'p13', name: 'SofiaMartinez',  loc: 'Madrid, Spain',        cleared: 16,  coins: 1620 },
+      { id: 'p14', name: 'VikramSingh',    loc: 'Rajasthan, India',     cleared: 11,  coins: 1350 },
+      { id: 'p15', name: 'PriyaKumari',    loc: 'Bihar, India',         cleared: 7,   coins: 1120 },
+      { id: 'p16', name: 'NoahWilliams',   loc: 'Ontario, Canada',      cleared: 4,   coins: 960 },
+      { id: 'p17', name: 'DevanshJain',    loc: 'Madhya Pradesh, India',cleared: 2,   coins: 880 },
+      { id: 'p18', name: 'NehaGupta',      loc: 'Punjab, India',        cleared: 1,   coins: 830 }
+    ];
+
+    let remoteLeaderboardPlayers = [];
+
+    function syncScoreToCloud() {
+      if (!FIREBASE_DB_URL) return;
+      try {
+        const playerKey = (state.playerName || 'player').toLowerCase().replace(/[^a-z0-9]/g, '_');
+        fetch(`${FIREBASE_DB_URL.replace(/\/$/, '')}/leaderboard/${playerKey}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: state.playerName,
+            loc: state.playerLocation,
+            cleared: Math.max(0, state.maxUnlockedLevel - 1),
+            coins: state.coins,
+            updatedAt: Date.now()
+          })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    function fetchCloudLeaderboard() {
+      if (!FIREBASE_DB_URL) return;
+      try {
+        fetch(`${FIREBASE_DB_URL.replace(/\/$/, '')}/leaderboard.json`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data || typeof data !== 'object') return;
+            remoteLeaderboardPlayers = Object.entries(data).map(([key, v]) => ({
+              id: `cloud_${key}`,
+              name: v.name || 'Player',
+              loc: v.loc || 'Global',
+              cleared: Number(v.cleared) || 0,
+              coins: Number(v.coins) || 0
+            }));
+            if (document.getElementById('modalRanking').classList.contains('open')) {
+              renderLeaderboardModal();
+            }
+          })
+          .catch(() => {});
+      } catch (e) {}
+    }
+
+    function computeGlobalStandings() {
+      const userCleared = Math.max(0, state.maxUnlockedLevel - 1);
+      const userEntry = {
+        id: 'current_user',
+        name: state.playerName || 'InzaaPlayer',
+        loc: state.playerLocation || 'Jharkhand, India',
+        cleared: userCleared,
+        coins: state.coins,
+        isYou: true
+      };
+
+      const pool = [...SEEDED_PLAYERS];
+      remoteLeaderboardPlayers.forEach(rp => {
+        if (rp.name.toLowerCase() !== userEntry.name.toLowerCase()) {
+          pool.push(rp);
+        }
+      });
+      pool.push(userEntry);
+
+      pool.sort((a, b) => {
+        if (b.cleared !== a.cleared) return b.cleared - a.cleared;
+        if (b.coins !== a.coins) return b.coins - a.coins;
+        return a.isYou ? -1 : b.isYou ? 1 : 0;
+      });
+
+      const userRank = pool.findIndex(p => p.isYou) + 1;
+      return { standings: pool, userRank, userCleared };
+    }
+
+    function renderLeaderboardModal() {
+      const { standings, userRank, userCleared } = computeGlobalStandings();
+      document.getElementById('yourRankBadge').textContent = `Your Rank: #${userRank}`;
+      document.getElementById('yourClearedBadge').textContent = `Cleared: LVL ${userCleared}`;
+      document.getElementById('inputPlayerName').value = state.playerName;
+      document.getElementById('inputPlayerLocation').value = state.playerLocation;
+
+      const listEl = document.getElementById('leaderboardList');
+      listEl.innerHTML = '';
+
+      standings.forEach((p, idx) => {
+        const rank = idx + 1;
+        const row = document.createElement('div');
+        const topClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
+        row.className = `lb-row ${topClass} ${p.isYou ? 'is-you' : ''}`;
+
+        const rankLabel = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        row.innerHTML = `
+          <div class="lb-rank-badge">${rankLabel}</div>
+          <div class="lb-player-info">
+            <div class="lb-name">${p.name} ${p.isYou ? '<span style="color:#fde047;font-size:10px;">(YOU)</span>' : ''}</div>
+            <div class="lb-loc">📍 ${p.loc} • ★ ${p.coins}</div>
+          </div>
+          <div class="lb-lvl-pill">LVL ${p.cleared}</div>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    function openRankingModal() {
+      renderLeaderboardModal();
+      openModal('modalRanking');
+      fetchCloudLeaderboard();
+    }
+
+    /**
+     * ============================================================================
+     * 5. PROGRESSIVE LEVEL GENERATOR (SCALES FROM 3 TO 12 COLORS, 100% SOLVABLE)
+     * ============================================================================
+     */
+    function getColorCountForLevel(lvl) {
+      if (lvl === 1) return 3;
+      if (lvl <= 3) return 4;
+      if (lvl <= 6) return 5;
+      if (lvl <= 10) return 6;
+      if (lvl <= 15) return 7;
+      if (lvl <= 22) return 8;
+      if (lvl <= 30) return 9;
+      if (lvl <= 40) return 10;
+      if (lvl <= 55) return 11;
+      return 12;
+    }
+
+    function generateLevel(lvl) {
+      const numColors = getColorCountForLevel(lvl);
+      const emptyTubes = 2;
+      const palette = [];
+      for (let i = 0; i < numColors; i++) {
+        palette.push(LIQUID_COLORS[(i + (lvl - 1)) % LIQUID_COLORS.length].id);
+      }
+
+      // Build pool of 4 units per color and shuffle until no tube starts already solved
+      let tubes = [];
+      let attempts = 0;
+      do {
+        attempts++;
+        const pool = [];
+        palette.forEach(c => {
+          for (let k = 0; k < CAPACITY; k++) pool.push(c);
+        });
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        tubes = [];
+        for (let t = 0; t < numColors; t++) {
+          tubes.push(pool.slice(t * CAPACITY, (t + 1) * CAPACITY));
+        }
+        for (let e = 0; e < emptyTubes; e++) {
+          tubes.push([]);
+        }
+      } while (
+        attempts < 25 &&
+        tubes.some(t => t.length === CAPACITY && t.every(c => c === t[0]))
+      );
+
+      state.tubes = tubes;
+      state.initialTubes = tubes.map(t => [...t]);
+      state.history = [];
+      state.selectedIndex = -1;
+      state.hintPair = null;
+      state.ghostUnlocked = false;
+      state.extraBottlesAdded = 0;
+      state.corkAnims = {};
+      state.bottleRipples = {};
+      state.anim = null;
+      updateHUD();
+    }
+
+    /**
+     * ============================================================================
+     * 6. POURING RULES, SMART HINTS & WIN DETECTION
+     * ============================================================================
+     */
+    function isTubeSolved(tube) {
+      return tube.length === CAPACITY && tube.every(c => c === tube[0]);
+    }
+
+    function canPour(fromIdx, toIdx) {
+      if (fromIdx === toIdx) return 0;
+      const src = state.tubes[fromIdx];
+      const dst = state.tubes[toIdx];
+      if (!src || !dst || src.length === 0 || dst.length >= CAPACITY) return 0;
+      if (isTubeSolved(src) || isTubeSolved(dst)) return 0;
+
+      const topColor = src[src.length - 1];
+      if (dst.length > 0 && dst[dst.length - 1] !== topColor) return 0;
+
+      let contiguous = 0;
+      for (let i = src.length - 1; i >= 0; i--) {
+        if (src[i] === topColor) contiguous++;
+        else break;
+      }
+      return Math.min(contiguous, CAPACITY - dst.length);
+    }
+
+    function findSmartHint() {
+      // Priority 1: Pour onto matching color that isn't an empty tube
+      for (let i = 0; i < state.tubes.length; i++) {
+        if (isTubeSolved(state.tubes[i]) || state.tubes[i].length === 0) continue;
+        for (let j = 0; j < state.tubes.length; j++) {
+          if (i === j || state.tubes[j].length === 0) continue;
+          if (canPour(i, j) > 0) {
+            const srcMono = state.tubes[i].every(c => c === state.tubes[i][0]);
+            if (srcMono && state.tubes[i].length >= state.tubes[j].length) continue;
+            return { from: i, to: j };
+          }
+        }
+      }
+      // Priority 2: Pour mixed bottle into an empty bottle
+      for (let i = 0; i < state.tubes.length; i++) {
+        if (isTubeSolved(state.tubes[i]) || state.tubes[i].length === 0) continue;
+        const srcMono = state.tubes[i].every(c => c === state.tubes[i][0]);
+        if (srcMono) continue;
+        for (let j = 0; j < state.tubes.length; j++) {
+          if (state.tubes[j].length === 0 && canPour(i, j) > 0) {
+            return { from: i, to: j };
+          }
+        }
+      }
+      return null;
+    }
+
+    function checkVictory() {
+      const allDone = state.tubes.every(t => t.length === 0 || isTubeSolved(t));
+      if (!allDone) return;
+
+      const reward = 25 + Math.min(50, Math.floor(state.level / 2) * 5);
+      state.coins += reward;
+      state.maxUnlockedLevel = Math.max(state.maxUnlockedLevel, state.level + 1);
+      saveProgress();
+      syncScoreToCloud();
+      updateHUD();
+
+      const { userRank } = computeGlobalStandings();
+      document.getElementById('victoryCoins').textContent = state.coins;
+      document.getElementById('victoryRewardText').textContent = `★ +${reward} Coins`;
+      document.getElementById('victoryRankText').textContent = `🏆 Global Rank #${userRank}`;
+      sfx.playVictoryFanfare();
+      setTimeout(openVictoryScreen, 520);
+    }
+
+    function spawnRibbonConfetti(cx, cy) {
+      const colors = ['#ffe234', '#ff5c8a', '#38bdf8', '#4ade80', '#c084fc'];
+      for (let i = 0; i < 26; i++) {
+        const ang = (Math.PI * 2 * i) / 26 + (Math.random() - 0.5) * 0.3;
+        const spd = 1.6 + Math.random() * 2.8;
+        state.particles.push({
+          x: cx,
+          y: cy,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 1.5,
+          w: 6,
+          h: 4,
+          rot: Math.random() * Math.PI,
+          vrot: (Math.random() - 0.5) * 0.25,
+          color: colors[i % colors.length],
+          alpha: 1,
+          isRect: true
+        });
+      }
+    }
+
+    function startPour(fromIdx, toIdx) {
+      const count = canPour(fromIdx, toIdx);
+      if (count <= 0) {
+        if (state.tubes[toIdx] && state.tubes[toIdx].length > 0 && !isTubeSolved(state.tubes[toIdx])) {
+          state.selectedIndex = toIdx;
+          sfx.playGlassTap(true);
+        } else {
+          state.selectedIndex = -1;
+          sfx.playGlassTap(false);
+        }
+        return;
+      }
+
+      state.history.push(state.tubes.map(t => [...t]));
+      state.hintPair = null;
+      state.selectedIndex = -1;
+
+      const src = state.tubes[fromIdx];
+      const dst = state.tubes[toIdx];
+      const colorId = src[src.length - 1];
+
+      state.anim = {
+        fromIdx,
+        toIdx,
+        count,
+        colorId,
+        srcStartLen: src.length,
+        dstStartLen: dst.length,
+        startTime: performance.now(),
+        moveDuration: 230,
+        pourDuration: 220 + count * 115,
+        returnDuration: 210,
+        soundStarted: false,
+        committed: false
+      };
+    }
+
+    function finalizePour(anim) {
+      if (anim.committed) return;
+      anim.committed = true;
+
+      for (let i = 0; i < anim.count; i++) {
+        state.tubes[anim.toIdx].push(state.tubes[anim.fromIdx].pop());
+      }
+
+      state.bottleRipples[anim.toIdx] = performance.now();
+
+      if (isTubeSolved(state.tubes[anim.toIdx]) && !state.corkAnims[anim.toIdx]) {
+        state.corkAnims[anim.toIdx] = { startTime: performance.now() };
+        sfx.playCorkAndChime();
+        const r = state.tubeRects[anim.toIdx];
+        if (r) spawnRibbonConfetti(r.x + r.w / 2, r.y + r.h * 0.45);
+      }
+
+      checkVictory();
+    }
+
+    /**
+     * ============================================================================
+     * 7. RESPONSIVE CANVAS LAYOUT & CRYSTAL BOTTLE RENDERING ENGINE
+     * ============================================================================
+     */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+    function resizeCanvas() {
+      const wrap = document.getElementById('stageWrap');
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      computeBottleLayout(rect.width, rect.height);
+    }
+
+    function computeBottleLayout(stageW, stageH) {
+      const totalReal = state.tubes.length;
+      const showGhost = !state.ghostUnlocked && state.extraBottlesAdded === 0;
+      const totalSlots = totalReal + (showGhost ? 1 : 0);
+
+      // Split into 2 balanced rows for 4-10 bottles, or 3 rows for 11+
+      let rows = 1;
+      if (totalSlots >= 4 && totalSlots <= 10) rows = 2;
+      else if (totalSlots > 10) rows = 3;
+
+      const colsPerRow = Math.ceil(totalSlots / rows);
+      const padX = 24;
+      const padTop = 34;
+      const padBot = 24;
+      const rowGap = rows === 3 ? 24 : 34;
+      const colGap = colsPerRow >= 5 ? 12 : 18;
+
+      const availW = stageW - padX * 2;
+      const availH = stageH - padTop - padBot - rowGap * (rows - 1);
+
+      const maxSlotW = (availW - colGap * (colsPerRow - 1)) / colsPerRow;
+      const maxSlotH = availH / rows;
+
+      const bh = Math.min(maxSlotH, maxSlotW * 2.85, 195);
+      const bw = Math.min(maxSlotW, bh * 0.37, 68);
+
+      state.tubeRects = [];
+      state.ghostRect = null;
+
+      const totalGridH = rows * bh + (rows - 1) * rowGap;
+      const startY = Math.max(padTop, (stageH - totalGridH) * 0.5);
+
+      let slotIndex = 0;
+      for (let r = 0; r < rows; r++) {
+        const remaining = totalSlots - slotIndex;
+        const rowCount = Math.min(colsPerRow, remaining);
+        const rowW = rowCount * bw + (rowCount - 1) * colGap;
+        const startX = (stageW - rowW) * 0.5;
+        const y = startY + r * (bh + rowGap);
+
+        for (let c = 0; c < rowCount; c++) {
+          const x = startX + c * (bw + colGap);
+          if (slotIndex < totalReal) {
+            state.tubeRects.push({ x, y, w: bw, h: bh });
+          } else if (showGhost) {
+            state.ghostRect = { x, y, w: bw, h: bh };
+          }
+          slotIndex++;
+        }
+      }
+    }
+
+    function traceBottleContour(ctx, bw, bh, skin, inset = 0) {
+      const x0 = inset;
+      const y0 = inset;
+      const w = bw - inset * 2;
+      const h = bh - inset * 2;
+      const cx = bw * 0.5;
+
+      ctx.beginPath();
+      if (skin === 'tube') {
+        const rad = w * 0.5;
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x0 + w, y0);
+        ctx.lineTo(x0 + w, y0 + h - rad);
+        ctx.arc(cx, y0 + h - rad, rad, 0, Math.PI, false);
+        ctx.lineTo(x0, y0);
+        ctx.closePath();
+      } else if (skin === 'round') {
+        const neckW = Math.max(8, bw * 0.42 - inset * 1.4);
+        const neckH = bh * 0.25;
+        const bodyR = w * 0.5;
+        const bodyCenterY = y0 + h - bodyR;
+        ctx.moveTo(cx - neckW / 2, y0);
+        ctx.lineTo(cx + neckW / 2, y0);
+        ctx.lineTo(cx + neckW / 2, y0 + neckH);
+        ctx.bezierCurveTo(x0 + w * 1.06, y0 + neckH + h * 0.11, x0 + w * 1.06, bodyCenterY, cx, y0 + h);
+        ctx.bezierCurveTo(x0 - w * 0.06, bodyCenterY, x0 - w * 0.06, y0 + neckH + h * 0.11, cx - neckW / 2, y0 + neckH);
+        ctx.closePath();
+      } else if (skin === 'diamond') {
+        const neckW = Math.max(8, bw * 0.42 - inset * 1.4);
+        const neckH = bh * 0.21;
+        const shoulderY = y0 + neckH + h * 0.12;
+        const botCorner = w * 0.26;
+        ctx.moveTo(cx - neckW / 2, y0);
+        ctx.lineTo(cx + neckW / 2, y0);
+        ctx.lineTo(cx + neckW / 2, y0 + neckH);
+        ctx.lineTo(x0 + w, shoulderY);
+        ctx.lineTo(x0 + w, y0 + h - botCorner);
+        ctx.lineTo(x0 + w - botCorner, y0 + h);
+        ctx.lineTo(x0 + botCorner, y0 + h);
+        ctx.lineTo(x0, y0 + h - botCorner);
+        ctx.lineTo(x0, shoulderY);
+        ctx.lineTo(cx - neckW / 2, y0 + neckH);
+        ctx.closePath();
+      } else {
+        // Classic High-Craft Crystal Potion Bottle
+        const neckW = Math.max(8, bw * 0.44 - inset * 1.4);
+        const neckH = bh * 0.19;
+        const shoulderEnd = y0 + neckH + h * 0.12;
+        const botRad = w * 0.30;
+
+        ctx.moveTo(cx - neckW / 2, y0);
+        ctx.lineTo(cx + neckW / 2, y0);
+        ctx.lineTo(cx + neckW / 2, y0 + neckH);
+        ctx.bezierCurveTo(cx + neckW / 2, y0 + neckH + h * 0.05, x0 + w, y0 + neckH + h * 0.04, x0 + w, shoulderEnd);
+        ctx.lineTo(x0 + w, y0 + h - botRad);
+        ctx.quadraticCurveTo(x0 + w, y0 + h, x0 + w - botRad, y0 + h);
+        ctx.lineTo(x0 + botRad, y0 + h);
+        ctx.quadraticCurveTo(x0, y0 + h, x0, y0 + h - botRad);
+        ctx.lineTo(x0, shoulderEnd);
+        ctx.bezierCurveTo(x0, y0 + neckH + h * 0.04, cx - neckW / 2, y0 + neckH + h * 0.05, cx - neckW / 2, y0 + neckH);
+        ctx.closePath();
+      }
+    }
+
+    function drawDashedGhostBottle(ctx, r) {
+      ctx.save();
+      ctx.translate(r.x, r.y);
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = 'rgba(184, 165, 255, 0.36)';
+
+      traceBottleContour(ctx, r.w, r.h, state.skin, 0);
+      ctx.stroke();
+
+      const divY = r.h * 0.78;
+      ctx.beginPath();
+      ctx.moveTo(4, divY);
+      ctx.lineTo(r.w - 4, divY);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawBottle(ctx, layers, x, y, w, h, now, options = {}) {
+      const {
+        angle = 0,
+        isSelected = false,
+        isHinted = false,
+        isSolved = false,
+        corkAnim = null,
+        rippleStart = 0,
+        isReceiving = false,
+        partialTopFill = 1
+      } = options;
+
+      ctx.save();
+      ctx.translate(x + w / 2, y);
+      ctx.rotate(angle);
+      ctx.translate(-w / 2, 0);
+
+      // Soft studio drop-shadow beneath stationary bottles
+      if (Math.abs(angle) < 0.05) {
+        ctx.save();
+        const shadowGrad = ctx.createRadialGradient(w * 0.5, h + 6, 2, w * 0.5, h + 6, w * 0.56);
+        shadowGrad.addColorStop(0, 'rgba(6, 3, 18, 0.58)');
+        shadowGrad.addColorStop(1, 'rgba(6, 3, 18, 0)');
+        ctx.fillStyle = shadowGrad;
+        ctx.beginPath();
+        ctx.ellipse(w * 0.5, h + 6, w * 0.54, 6.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Ambient outer selection / hint / completion aura
+      if (isSelected || isHinted || isSolved) {
+        ctx.save();
+        ctx.shadowColor = isSolved
+          ? 'rgba(56, 189, 248, 0.68)'
+          : isHinted
+            ? 'rgba(255, 226, 52, 0.88)'
+            : 'rgba(168, 85, 247, 0.85)';
+        ctx.shadowBlur = isHinted ? 26 : 20;
+        traceBottleContour(ctx, w, h, state.skin, 0);
+        ctx.fillStyle = 'rgba(139, 92, 246, 0.10)';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Outer glass body tint
+      ctx.save();
+      traceBottleContour(ctx, w, h, state.skin, 0);
+      const outerGlassGrad = ctx.createLinearGradient(0, 0, w, 0);
+      outerGlassGrad.addColorStop(0, 'rgba(216, 200, 255, 0.24)');
+      outerGlassGrad.addColorStop(0.22, 'rgba(255, 255, 255, 0.06)');
+      outerGlassGrad.addColorStop(0.78, 'rgba(139, 92, 246, 0.05)');
+      outerGlassGrad.addColorStop(1, 'rgba(216, 200, 255, 0.20)');
+      ctx.fillStyle = outerGlassGrad;
+      ctx.fill();
+      ctx.restore();
+
+      // Clip interior with 2.6px crystal glass wall (zero bottom-corner notches)
+      ctx.save();
+      traceBottleContour(ctx, w, h, state.skin, 2.6);
+      ctx.clip();
+
+      const cavityGrad = ctx.createLinearGradient(0, 0, w, 0);
+      cavityGrad.addColorStop(0, 'rgba(14, 10, 36, 0.62)');
+      cavityGrad.addColorStop(0.5, 'rgba(24, 17, 58, 0.44)');
+      cavityGrad.addColorStop(1, 'rgba(14, 10, 36, 0.62)');
+      ctx.fillStyle = cavityGrad;
+      ctx.fillRect(-w * 0.5, -h * 0.2, w * 2, h * 1.4);
+
+      const glassBaseThickness = 3.5;
+      const bodyUsableH = h * 0.69;
+      const unitH = bodyUsableH / CAPACITY;
+
+      // Gravity-leveled liquid physics when tilted
+      const absAngle = Math.abs(angle);
+      if (absAngle > 0.05 && layers.length > 0) {
+        ctx.save();
+        const pivotY = h * 0.48;
+        ctx.translate(w / 2, pivotY);
+        ctx.rotate(-angle * 0.88);
+        ctx.translate(-w / 2, -pivotY);
+
+        const tiltedSpan = h * 1.35;
+        const tiltedUnitH = (tiltedSpan * 0.68) / CAPACITY;
+        const baseBottom = pivotY + w * 0.46;
+
+        for (let i = 0; i < layers.length; i++) {
+          const col = COLOR_MAP[layers[i]] || LIQUID_COLORS[0];
+          const fillFactor = i === layers.length - 1 ? partialTopFill : 1;
+          if (fillFactor <= 0.001) continue;
+
+          const lh = tiltedUnitH * fillFactor;
+          const bY = baseBottom - i * tiltedUnitH;
+          const tY = bY - lh;
+
+          const grad = ctx.createLinearGradient(0, tY, 0, bY);
+          grad.addColorStop(0, col.top);
+          grad.addColorStop(0.5, col.mid);
+          grad.addColorStop(1, col.deep);
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(-h, tY - 0.5, h * 2.5, lh + 1.5);
+
+          if (i === layers.length - 1) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.46)';
+            ctx.fillRect(-h, tY, h * 2.5, 2.4);
+          }
+        }
+        ctx.restore();
+      } else {
+        // Upright liquid layers with wave ripple, depth shading & glitter motes
+        const rippleAge = rippleStart ? (now - rippleStart) : 9999;
+        const rippleAmp = isReceiving
+          ? 2.2
+          : rippleAge < 950
+            ? (1 - rippleAge / 950) * 2.6
+            : 0;
+
+        for (let i = 0; i < layers.length; i++) {
+          const col = COLOR_MAP[layers[i]] || LIQUID_COLORS[0];
+          const fillFactor = i === layers.length - 1 ? partialTopFill : 1;
+          if (fillFactor <= 0.001) continue;
+
+          const layerH = unitH * fillFactor;
+          const bottomY = h - glassBaseThickness - i * unitH;
+          const topY = bottomY - layerH;
+          const isTopLayer = i === layers.length - 1;
+
+          const grad = ctx.createLinearGradient(0, topY, 0, bottomY);
+          grad.addColorStop(0, col.top);
+          grad.addColorStop(0.42, col.mid);
+          grad.addColorStop(1, col.deep);
+
+          ctx.fillStyle = grad;
+          if (isTopLayer && rippleAmp > 0.05) {
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.2, bottomY + 1);
+            ctx.lineTo(-w * 0.2, topY);
+            const steps = 16;
+            for (let s = 0; s <= steps; s++) {
+              const px = (s / steps) * w;
+              const wave = Math.sin((s / steps) * Math.PI * 2 + now * 0.018) * rippleAmp;
+              ctx.lineTo(px, topY + wave);
+            }
+            ctx.lineTo(w * 1.2, bottomY + 1);
+            ctx.closePath();
+            ctx.fill();
+          } else {
+            ctx.fillRect(-w * 0.3, topY - 0.5, w * 1.6, layerH + 1.5);
+          }
+
+          const sideShade = ctx.createLinearGradient(0, 0, w, 0);
+          sideShade.addColorStop(0, 'rgba(0, 0, 0, 0.22)');
+          sideShade.addColorStop(0.28, 'rgba(255, 255, 255, 0.08)');
+          sideShade.addColorStop(0.72, 'rgba(255, 255, 255, 0.02)');
+          sideShade.addColorStop(1, 'rgba(0, 0, 0, 0.24)');
+          ctx.fillStyle = sideShade;
+          ctx.fillRect(0, topY, w, layerH);
+
+          if (i > 0) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+            ctx.fillRect(2, bottomY - 0.8, w - 4, 1.2);
+          }
+
+          // Shimmering micro-glitter specks
+          ctx.fillStyle = col.spark;
+          for (let g = 0; g < 7; g++) {
+            const gx = ((i * 29 + g * 19) % 74 + 13) * 0.01 * w;
+            const gy = topY + (((g * 23 + i * 13) % 72 + 14) * 0.01 * layerH);
+            const twinkle = 0.25 + 0.55 * Math.sin(now * 0.005 + g * 1.7 + i);
+            ctx.globalAlpha = Math.max(0.14, twinkle);
+            ctx.beginPath();
+            ctx.arc(gx, gy, g % 2 === 0 ? 1.25 : 0.85, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+
+          // Rising bright sparkles inside completed bottles
+          if (isSolved) {
+            for (let s = 0; s < 5; s++) {
+              const prog = ((now * 0.00085 + s * 0.21) % 1);
+              const sy = h - glassBaseThickness - prog * bodyUsableH;
+              const sx = w * (0.24 + ((s * 37) % 52) * 0.01);
+              ctx.globalAlpha = Math.sin(prog * Math.PI) * 0.92;
+              ctx.fillStyle = '#ffffff';
+              ctx.beginPath();
+              ctx.arc(sx, sy, 1.85, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+          }
+
+          if (isTopLayer) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
+            ctx.beginPath();
+            ctx.ellipse(w * 0.5, topY + 0.8, w * 0.48, 2.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // Thick crystal glass base refraction crescent
+      const baseRefract = ctx.createLinearGradient(0, h - 10, 0, h);
+      baseRefract.addColorStop(0, 'rgba(255, 255, 255, 0)');
+      baseRefract.addColorStop(1, 'rgba(233, 213, 255, 0.28)');
+      ctx.fillStyle = baseRefract;
+      ctx.fillRect(0, h - 10, w, 10);
+
+      // Dual vertical crystal glass specular highlights
+      const leftShine = ctx.createLinearGradient(w * 0.13, 0, w * 0.27, 0);
+      leftShine.addColorStop(0, 'rgba(255,255,255,0)');
+      leftShine.addColorStop(0.5, 'rgba(255,255,255,0.28)');
+      leftShine.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = leftShine;
+      ctx.fillRect(w * 0.13, h * 0.20, w * 0.14, h * 0.74);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+      ctx.fillRect(w * 0.81, h * 0.23, w * 0.055, h * 0.68);
+
+      ctx.restore(); // End interior glass clip
+
+      // Wooden / Amber Cork Stopper Drop Animation when bottle is solved
+      if (isSolved) {
+        let corkOffsetY = 0;
+        if (corkAnim && corkAnim.startTime > 0) {
+          const t = Math.min(1, (now - corkAnim.startTime) / 320);
+          const ease = t < 0.75
+            ? (t / 0.75) * (t / 0.75)
+            : 1 - Math.sin(((t - 0.75) / 0.25) * Math.PI) * 0.14;
+          corkOffsetY = -28 * (1 - ease);
+        }
+
+        const neckW = state.skin === 'tube' ? w * 0.72 : w * 0.44;
+        const corkTopW = neckW * 1.16;
+        const corkBotW = neckW * 0.86;
+        const corkH = 12;
+        const corkY = -6 + corkOffsetY;
+
+        ctx.save();
+        const corkGrad = ctx.createLinearGradient(w / 2 - corkTopW / 2, corkY, w / 2 + corkTopW / 2, corkY + corkH);
+        corkGrad.addColorStop(0, '#e07a3f');
+        corkGrad.addColorStop(0.5, '#b8521e');
+        corkGrad.addColorStop(1, '#7c2d12');
+
+        ctx.fillStyle = corkGrad;
+        ctx.strokeStyle = '#fdba74';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(w / 2 - corkTopW / 2, corkY);
+        ctx.lineTo(w / 2 + corkTopW / 2, corkY);
+        ctx.lineTo(w / 2 + corkBotW / 2, corkY + corkH);
+        ctx.lineTo(w / 2 - corkBotW / 2, corkY + corkH);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Outer crystal glass contour + subtle inner edge refraction stroke
+      traceBottleContour(ctx, w, h, state.skin, 1.4);
+      ctx.lineWidth = 0.9;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.stroke();
+
+      traceBottleContour(ctx, w, h, state.skin, 0);
+      ctx.lineWidth = isSelected || isHinted ? 2.6 : 2.1;
+      ctx.strokeStyle = isHinted
+        ? '#ffe234'
+        : isSelected
+          ? '#d8b4fe'
+          : isSolved
+            ? 'rgba(192, 132, 252, 0.85)'
+            : 'rgba(157, 122, 255, 0.68)';
+      ctx.stroke();
+
+      // Double-ring crystal glass rim lip at the narrow mouth
+      const rimW = state.skin === 'tube' ? w * 1.12 : w * 0.56;
+      const rimX = (w - rimW) / 2;
+      const rimGrad = ctx.createLinearGradient(rimX, 0, rimX + rimW, 0);
+      rimGrad.addColorStop(0, 'rgba(233, 213, 255, 0.36)');
+      rimGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.18)');
+      rimGrad.addColorStop(1, 'rgba(233, 213, 255, 0.34)');
+      ctx.fillStyle = rimGrad;
+      ctx.strokeStyle = isSelected ? '#f3e8ff' : 'rgba(184, 156, 255, 0.84)';
+      ctx.lineWidth = 1.7;
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(rimX, -2.5, rimW, 6.5, 3.2);
+      } else {
+        ctx.rect(rimX, -2.5, rimW, 6.5);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Golden twinkle ribbon wrap animation around newly completed bottle
+      if (isSolved && corkAnim && corkAnim.startTime > 0) {
+        const ribAge = now - corkAnim.startTime;
+        if (ribAge < 950) {
+          const alpha = ribAge < 650 ? 1 : 1 - (ribAge - 650) / 300;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, alpha);
+          ctx.strokeStyle = '#fde047';
+          ctx.shadowColor = '#facc15';
+          ctx.shadowBlur = 10;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(w * 0.08, h * 0.42);
+          ctx.quadraticCurveTo(w * 0.5, h * 0.56, w * 0.92, h * 0.66);
+          ctx.moveTo(w * 0.92, h * 0.42);
+          ctx.quadraticCurveTo(w * 0.5, h * 0.56, w * 0.08, h * 0.66);
+          ctx.stroke();
+
+          const starPts = [
+            [w * 0.14, h * 0.44],
+            [w * 0.86, h * 0.44],
+            [w * 0.5, h * 0.55],
+            [w * 0.14, h * 0.65],
+            [w * 0.86, h * 0.65]
+          ];
+          ctx.fillStyle = '#ffffff';
+          starPts.forEach(([sx, sy]) => {
+            ctx.beginPath();
+            ctx.arc(sx, sy, 2.4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.restore();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function renderLoop(now) {
+      const stageW = canvas.width / dpr;
+      const stageH = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, stageW, stageH);
+
+      let animState = null;
+      if (state.anim) {
+        const a = state.anim;
+        const elapsed = now - a.startTime;
+        const totalDur = a.moveDuration + a.pourDuration + a.returnDuration;
+
+        if (elapsed >= totalDur) {
+          finalizePour(a);
+          state.anim = null;
+        } else {
+          const srcRect = state.tubeRects[a.fromIdx];
+          const dstRect = state.tubeRects[a.toIdx];
+          if (srcRect && dstRect) {
+            const pourRight = dstRect.x >= srcRect.x;
+            const dir = pourRight ? 1 : -1;
+
+            const maxTiltAngle = dir * (Math.PI * 0.465);
+            const rimOffset = (state.skin === 'tube' ? srcRect.w * 0.5 : srcRect.w * 0.26);
+            const targetMouthX = dstRect.x + dstRect.w * 0.5;
+            const targetMouthY = dstRect.y - 16;
+
+            const targetPivotX = targetMouthX - Math.cos(maxTiltAngle) * (dir * rimOffset);
+            const targetPivotY = targetMouthY - Math.sin(maxTiltAngle) * (dir * rimOffset);
+            const targetBottleX = targetPivotX - srcRect.w * 0.5;
+            const targetBottleY = targetPivotY;
+
+            let phase = 'move';
+            let phaseT = 0;
+            if (elapsed < a.moveDuration) {
+              phase = 'move';
+              phaseT = easeInOutCubic(elapsed / a.moveDuration);
+            } else if (elapsed < a.moveDuration + a.pourDuration) {
+              phase = 'pour';
+              phaseT = (elapsed - a.moveDuration) / a.pourDuration;
+              if (!a.soundStarted) {
+                a.soundStarted = true;
+                sfx.playWaterPour(
+                  a.pourDuration / 1000,
+                  a.dstStartLen / CAPACITY,
+                  (a.dstStartLen + a.count) / CAPACITY
+                );
+              }
+            } else {
+              phase = 'return';
+              phaseT = easeInOutCubic((elapsed - a.moveDuration - a.pourDuration) / a.returnDuration);
+            }
+
+            let curX = srcRect.x;
+            let curY = srcRect.y;
+            let curAngle = 0;
+            let pouredUnits = 0;
+
+            if (phase === 'move') {
+              curX = srcRect.x + (targetBottleX - srcRect.x) * phaseT;
+              curY = srcRect.y + (targetBottleY - srcRect.y) * phaseT - Math.sin(phaseT * Math.PI) * 26;
+              curAngle = maxTiltAngle * phaseT;
+              pouredUnits = 0;
+            } else if (phase === 'pour') {
+              curX = targetBottleX;
+              curY = targetBottleY;
+              curAngle = maxTiltAngle + dir * 0.03 * phaseT;
+              pouredUnits = a.count * phaseT;
+            } else {
+              curX = targetBottleX + (srcRect.x - targetBottleX) * phaseT;
+              curY = targetBottleY + (srcRect.y - targetBottleY) * phaseT;
+              curAngle = maxTiltAngle * (1 - phaseT);
+              pouredUnits = a.count;
+            }
+
+            animState = {
+              ...a,
+              phase,
+              dir,
+              curX,
+              curY,
+              curAngle,
+              pouredUnits
+            };
+          }
+        }
+      }
+
+      // 1. Draw Dashed Ghost Extra-Bottle Slot if available
+      if (state.ghostRect) {
+        drawDashedGhostBottle(ctx, state.ghostRect);
+      }
+
+      // 2. Draw all stationary bottles
+      for (let i = 0; i < state.tubes.length; i++) {
+        if (animState && i === animState.fromIdx) continue;
+        const r = state.tubeRects[i];
+        if (!r) continue;
+
+        let layers = [...state.tubes[i]];
+        let partialTop = 1;
+
+        if (animState && i === animState.toIdx && animState.pouredUnits > 0) {
+          const addedWhole = Math.floor(animState.pouredUnits);
+          const frac = animState.pouredUnits - addedWhole;
+          for (let k = 0; k < addedWhole; k++) layers.push(animState.colorId);
+          if (frac > 0.001 && layers.length < CAPACITY) {
+            layers.push(animState.colorId);
+            partialTop = frac;
+          }
+        }
+
+        const isSelected = state.selectedIndex === i && !animState;
+        const isHinted = !animState && state.hintPair && (state.hintPair.from === i || state.hintPair.to === i);
+        const hintPulse = isHinted ? Math.sin(now * 0.01) * 6 : 0;
+        const liftY = isSelected ? -20 : hintPulse;
+        const solved = !animState && isTubeSolved(state.tubes[i]);
+
+        drawBottle(ctx, layers, r.x, r.y + liftY, r.w, r.h, now, {
+          isSelected,
+          isHinted,
+          isSolved: solved,
+          corkAnim: state.corkAnims[i] || null,
+          rippleStart: state.bottleRipples[i] || 0,
+          isReceiving: Boolean(animState && i === animState.toIdx && animState.phase === 'pour'),
+          partialTopFill: partialTop
+        });
+      }
+
+      // 3. Draw vertical liquid stream + tilted pouring bottle on top layer
+      if (animState) {
+        const srcRect = state.tubeRects[animState.fromIdx];
+        const dstRect = state.tubeRects[animState.toIdx];
+
+        const remUnits = Math.max(0, animState.srcStartLen - animState.pouredUnits);
+        const wholeRem = Math.floor(remUnits);
+        const fracRem = remUnits - wholeRem;
+
+        const srcLayers = state.tubes[animState.fromIdx].slice(0, wholeRem);
+        let srcTopPartial = 1;
+        if (fracRem > 0.001 && wholeRem < state.tubes[animState.fromIdx].length) {
+          srcLayers.push(state.tubes[animState.fromIdx][wholeRem]);
+          srcTopPartial = fracRem;
+        }
+
+        const rimOffset = (state.skin === 'tube' ? srcRect.w * 0.48 : srcRect.w * 0.25);
+        const pivotX = animState.curX + srcRect.w / 2;
+        const pivotY = animState.curY;
+        const mouthX = pivotX + Math.cos(animState.curAngle) * (animState.dir * rimOffset);
+        const mouthY = pivotY + Math.sin(animState.curAngle) * (animState.dir * rimOffset);
+
+        if (animState.phase === 'pour') {
+          const col = COLOR_MAP[animState.colorId] || LIQUID_COLORS[0];
+          const dstFillUnits = animState.dstStartLen + animState.pouredUnits;
+          const bodyUsableH = dstRect.h * 0.69;
+          const impactX = dstRect.x + dstRect.w * 0.5;
+          const impactY = dstRect.y + dstRect.h - 3.5 - (dstFillUnits / CAPACITY) * bodyUsableH;
+
+          const streamGrad = ctx.createLinearGradient(mouthX, mouthY, impactX, impactY);
+          streamGrad.addColorStop(0, col.top);
+          streamGrad.addColorStop(0.5, col.mid);
+          streamGrad.addColorStop(1, col.deep);
+
+          ctx.save();
+          ctx.strokeStyle = streamGrad;
+          ctx.lineWidth = Math.max(4.5, srcRect.w * 0.11);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(mouthX, mouthY);
+          ctx.quadraticCurveTo(mouthX + animState.dir * 3, (mouthY + impactY) * 0.5, impactX, impactY);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.36)';
+          ctx.lineWidth = Math.max(1.4, srcRect.w * 0.035);
+          ctx.stroke();
+
+          ctx.fillStyle = col.top;
+          ctx.beginPath();
+          ctx.ellipse(impactX, impactY, dstRect.w * 0.22, 2.8, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (Math.random() < 0.65) {
+            state.particles.push({
+              x: impactX + (Math.random() - 0.5) * 9,
+              y: impactY - 2,
+              vx: (Math.random() - 0.5) * 1.8,
+              vy: -1.4 - Math.random() * 1.6,
+              radius: 1.6 + Math.random() * 1.2,
+              color: col.spark,
+              alpha: 0.95,
+              isRect: false
+            });
+          }
+          ctx.restore();
+        }
+
+        drawBottle(ctx, srcLayers, animState.curX, animState.curY, srcRect.w, srcRect.h, now, {
+          angle: animState.curAngle,
+          isSelected: true,
+          partialTopFill: srcTopPartial
+        });
+      }
+
+      // 4. Render splash droplets & bottle completion confetti
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.14;
+        p.alpha -= 0.026;
+        if (p.alpha <= 0) {
+          state.particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        if (p.isRect) {
+          p.rot += p.vrot;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        } else {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      ctx.restore();
+      requestAnimationFrame(renderLoop);
+    }
+
+    /**
+     * ============================================================================
+     * 8. VICTORY CONFETTI ENGINE ("EXCELLENT!" SCREEN)
+     * ============================================================================
+     */
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cCtx = confettiCanvas.getContext('2d');
+    let victoryPieces = [];
+    let victoryAnimId = null;
+
+    function openVictoryScreen() {
+      const scr = document.getElementById('victoryScreen');
+      scr.classList.add('open');
+
+      const rect = scr.getBoundingClientRect();
+      confettiCanvas.width = Math.max(1, rect.width * dpr);
+      confettiCanvas.height = Math.max(1, rect.height * dpr);
+
+      const colors = ['#ffe234', '#ff5c8a', '#38bdf8', '#4ade80', '#c084fc', '#fb923c', '#f43f5e'];
+      victoryPieces = [];
+      for (let i = 0; i < 85; i++) {
+        victoryPieces.push({
+          x: Math.random() * rect.width,
+          y: -20 - Math.random() * rect.height * 0.45,
+          vx: (Math.random() - 0.5) * 2.4,
+          vy: 2.2 + Math.random() * 3.4,
+          w: 7 + Math.random() * 5,
+          h: 4 + Math.random() * 4,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 0.16,
+          color: colors[i % colors.length]
+        });
+      }
+
+      function tickConfetti() {
+        if (!scr.classList.contains('open')) return;
+        const w = confettiCanvas.width / dpr;
+        const h = confettiCanvas.height / dpr;
+        cCtx.save();
+        cCtx.scale(dpr, dpr);
+        cCtx.clearRect(0, 0, w, h);
+
+        victoryPieces.forEach(p => {
+          p.x += p.vx + Math.sin(p.y * 0.03) * 0.6;
+          p.y += p.vy;
+          p.rot += p.vrot;
+          if (p.y > h + 20) {
+            p.y = -15;
+            p.x = Math.random() * w;
+          }
+          cCtx.save();
+          cCtx.translate(p.x, p.y);
+          cCtx.rotate(p.rot);
+          cCtx.fillStyle = p.color;
+          cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          cCtx.restore();
+        });
+
+        cCtx.restore();
+        victoryAnimId = requestAnimationFrame(tickConfetti);
+      }
+
+      cancelAnimationFrame(victoryAnimId);
+      victoryAnimId = requestAnimationFrame(tickConfetti);
+    }
+
+    function closeVictoryScreen() {
+      document.getElementById('victoryScreen').classList.remove('open');
+      cancelAnimationFrame(victoryAnimId);
+    }
+
+    /**
+     * ============================================================================
+     * 9. TOUCH INPUT & BOOSTER HANDLERS (HINT, UNDO, EXTRA BOTTLE)
+     * ============================================================================
+     */
+    function unlockExtraBottle() {
+      if (state.anim) return;
+      if (state.extraBottlesAdded >= 2) {
+        showToast('Max 2 extra bottles added!');
+        return;
+      }
+      if (state.extraChargesLeft <= 0) {
+        openRefillModal('extra');
+        return;
+      }
+
+      state.extraChargesLeft--;
+      state.extraBottlesAdded++;
+      state.ghostUnlocked = true;
+      state.tubes.push([]);
+      saveProgress();
+      updateHUD();
+      resizeCanvas();
+      sfx.playCorkAndChime();
+      showToast('Extra Bottle Unlocked!');
+    }
+
+    function handleStageTap(clientX, clientY) {
+      if (state.anim) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      if (state.ghostRect) {
+        const g = state.ghostRect;
+        if (x >= g.x - 6 && x <= g.x + g.w + 6 && y >= g.y - 14 && y <= g.y + g.h + 10) {
+          unlockExtraBottle();
+          return;
+        }
+      }
+
+      let tappedIdx = -1;
+      for (let i = 0; i < state.tubeRects.length; i++) {
+        const r = state.tubeRects[i];
+        if (x >= r.x - 8 && x <= r.x + r.w + 8 && y >= r.y - 24 && y <= r.y + r.h + 12) {
+          tappedIdx = i;
+          break;
+        }
+      }
+
+      if (tappedIdx === -1) {
+        if (state.selectedIndex !== -1) {
+          state.selectedIndex = -1;
+          sfx.playGlassTap(false);
+        }
+        return;
+      }
+
+      if (isTubeSolved(state.tubes[tappedIdx])) {
+        sfx.playGlassTap(false);
+        return;
+      }
+
+      if (state.selectedIndex === -1) {
+        if (state.tubes[tappedIdx].length === 0) return;
+        state.selectedIndex = tappedIdx;
+        sfx.playGlassTap(true);
+      } else if (state.selectedIndex === tappedIdx) {
+        state.selectedIndex = -1;
+        sfx.playGlassTap(false);
+      } else {
+        startPour(state.selectedIndex, tappedIdx);
+      }
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handleStageTap(e.clientX, e.clientY);
+    });
+
+    /**
+     * ============================================================================
+     * 10. UI CONTROLS, LEVEL MAP, SKINS & REFILL MODALS
+     * ============================================================================
+     */
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2100);
+    }
+
+    function updateHUD() {
+      document.getElementById('hudLevelTitle').textContent = `Level ${state.level}`;
+      document.getElementById('hudCoins').textContent = state.coins;
+      document.getElementById('badgeHint').textContent = state.hintsLeft;
+      document.getElementById('badgeUndo').textContent = state.undosLeft;
+      document.getElementById('badgeExtra').textContent = state.extraChargesLeft;
+
+      document.getElementById('iconSoundOn').style.display = sfx.enabled ? 'block' : 'none';
+      document.getElementById('iconSoundOff').style.display = sfx.enabled ? 'none' : 'block';
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => closeModal(btn.dataset.close));
+    });
+
+    let pendingRefillType = 'hint';
+    function openRefillModal(type) {
+      pendingRefillType = type;
+      const names = { hint: 'Smart Hints', undo: 'Undo Moves', extra: 'Extra Bottles' };
+      document.getElementById('refillTitle').textContent = `Refill ${names[type]}`;
+      openModal('modalRefill');
+    }
+
+    function grantRefill(type) {
+      if (type === 'hint') state.hintsLeft += 2;
+      if (type === 'undo') state.undosLeft += 2;
+      if (type === 'extra') state.extraChargesLeft += 2;
+      saveProgress();
+      updateHUD();
+      sfx.playCorkAndChime();
+      showToast('+2 Charges Added!');
+    }
+
+    document.getElementById('btnRefillWithCoins').addEventListener('click', () => {
+      if (state.coins < 100) {
+        showToast('Not enough coins (Need 100 ★)');
+        return;
+      }
+      state.coins -= 100;
+      grantRefill(pendingRefillType);
+      closeModal('modalRefill');
+    });
+
+    document.getElementById('btnRefillWithAd').addEventListener('click', () => {
+      closeModal('modalRefill');
+      grantRefill(pendingRefillType);
+    });
+
+    document.getElementById('btnHint').addEventListener('click', () => {
+      if (state.anim) return;
+      if (state.hintsLeft <= 0) {
+        openRefillModal('hint');
+        return;
+      }
+      const move = findSmartHint();
+      if (!move) {
+        showToast('No direct move — try +1 Extra Bottle!');
+        return;
+      }
+      state.hintsLeft--;
+      state.hintPair = move;
+      state.selectedIndex = move.from;
+      saveProgress();
+      updateHUD();
+      sfx.playGlassTap(true);
+      showToast('Hint: Pour into highlighted bottle');
+    });
+
+    document.getElementById('btnUndo').addEventListener('click', () => {
+      if (state.anim) return;
+      if (state.history.length === 0) {
+        showToast('Nothing to undo');
+        return;
+      }
+      if (state.undosLeft <= 0) {
+        openRefillModal('undo');
+        return;
+      }
+      state.undosLeft--;
+      state.tubes = state.history.pop();
+      state.selectedIndex = -1;
+      state.hintPair = null;
+      state.corkAnims = {};
+      state.tubes.forEach((t, idx) => {
+        if (isTubeSolved(t)) state.corkAnims[idx] = { startTime: 0 };
+      });
+      saveProgress();
+      updateHUD();
+      sfx.playGlassTap(false);
+    });
+
+    document.getElementById('btnExtraBottle').addEventListener('click', unlockExtraBottle);
+
+    document.getElementById('btnRestart').addEventListener('click', () => {
+      if (state.anim) return;
+      state.tubes = state.initialTubes.map(t => [...t]);
+      for (let i = 0; i < state.extraBottlesAdded; i++) state.tubes.push([]);
+      state.history = [];
+      state.selectedIndex = -1;
+      state.hintPair = null;
+      state.corkAnims = {};
+      sfx.playGlassTap(false);
+      showToast('Level Restarted');
+    });
+
+    document.getElementById('btnSound').addEventListener('click', () => {
+      sfx.enabled = !sfx.enabled;
+      if (sfx.enabled) sfx.playGlassTap(true);
+      saveProgress();
+      updateHUD();
+    });
+
+    function openMenuDrawer() {
+      const grid = document.getElementById('levelMapGrid');
+      document.getElementById('unlockedStatusText').textContent = `Cleared: ${Math.max(0, state.maxUnlockedLevel - 1)}`;
+      grid.innerHTML = '';
+
+      const totalCells = Math.max(25, Math.ceil((state.maxUnlockedLevel + 5) / 5) * 5);
+      for (let lvl = 1; lvl <= totalCells; lvl++) {
+        const unlocked = lvl <= state.maxUnlockedLevel;
+        const cleared = lvl < state.maxUnlockedLevel;
+        const current = lvl === state.level;
+
+        const cell = document.createElement('div');
+        cell.className = `lvl-node ${current ? 'current' : cleared ? 'cleared' : ''} ${!unlocked ? 'locked' : ''}`;
+        cell.innerHTML = unlocked
+          ? `<span>${lvl}</span><small style="font-size:9px;opacity:.75;">${cleared ? '✓' : 'PLAY'}</small>`
+          : `<span style="font-size:12px;">🔒</span><small style="font-size:9px;">${lvl}</small>`;
+
+        cell.addEventListener('click', () => {
+          if (!unlocked) {
+            showToast(`Clear Level ${state.maxUnlockedLevel} first!`);
+            return;
+          }
+          state.level = lvl;
+          saveProgress();
+          generateLevel(state.level);
+          resizeCanvas();
+          closeModal('modalMenu');
+        });
+        grid.appendChild(cell);
+      }
+
+      const skinBox = document.getElementById('skinSelector');
+      skinBox.innerHTML = '';
+      BOTTLE_SKINS.forEach(sk => {
+        const owned = state.unlockedSkins.includes(sk.id);
+        const active = state.skin === sk.id;
+        const card = document.createElement('div');
+        card.className = `skin-card ${active ? 'active' : ''}`;
+        card.innerHTML = `
+          <span>${sk.name}</span>
+          <span style="color:${active ? '#34d399' : '#fde047'};">
+            ${active ? 'Active' : owned ? 'Select' : `${sk.cost} ★`}
+          </span>
+        `;
+        card.addEventListener('click', () => {
+          if (owned) {
+            state.skin = sk.id;
+            saveProgress();
+            openMenuDrawer();
+            showToast(`${sk.name} selected`);
+          } else if (state.coins >= sk.cost) {
+            state.coins -= sk.cost;
+            state.unlockedSkins.push(sk.id);
+            state.skin = sk.id;
+            saveProgress();
+            updateHUD();
+            openMenuDrawer();
+            sfx.playCorkAndChime();
+            showToast(`Unlocked ${sk.name}!`);
+          } else {
+            showToast(`Need ${sk.cost} coins!`);
+          }
+        });
+        skinBox.appendChild(card);
+      });
+
+      openModal('modalMenu');
+    }
+
+    document.getElementById('btnMenu').addEventListener('click', openMenuDrawer);
+    document.getElementById('btnCoinPill').addEventListener('click', openMenuDrawer);
+    document.getElementById('hudLevelTitle').addEventListener('click', openMenuDrawer);
+    document.getElementById('btnRanking').addEventListener('click', openRankingModal);
+    document.getElementById('btnMenuRanking').addEventListener('click', () => {
+      closeModal('modalMenu');
+      openRankingModal();
+    });
+
+    document.getElementById('btnSaveRankProfile').addEventListener('click', () => {
+      const rawName = document.getElementById('inputPlayerName').value.trim();
+      const rawLoc = document.getElementById('inputPlayerLocation').value.trim();
+      if (!rawName) {
+        showToast('Please enter a Username!');
+        return;
+      }
+      state.playerName = rawName.slice(0, 18);
+      state.playerLocation = (rawLoc || 'India').slice(0, 24);
+      saveProgress();
+      syncScoreToCloud();
+      renderLeaderboardModal();
+      sfx.playCorkAndChime();
+      showToast('Ranking Profile Updated!');
+    });
+
+    document.getElementById('btnDailyBonus').addEventListener('click', () => {
+      const today = new Date().toISOString().slice(0, 10);
+      if (state.lastDailyDate === today) {
+        showToast('Daily reward already claimed today!');
+        return;
+      }
+      state.lastDailyDate = today;
+      state.coins += 75;
+      saveProgress();
+      updateHUD();
+      sfx.playCorkAndChime();
+      showToast('+75 Daily Coins Claimed!');
+    });
+
+    document.getElementById('btnFreeCoinsAd').addEventListener('click', () => {
+      state.coins += 100;
+      saveProgress();
+      updateHUD();
+      sfx.playCorkAndChime();
+      closeModal('modalMenu');
+      showToast('+100 Bonus Coins Added!');
+    });
+
+    document.getElementById('btnOpenChai').addEventListener('click', () => {
+      closeModal('modalMenu');
+      openModal('modalChai');
+    });
+
+    document.getElementById('btnCopyUpi').addEventListener('click', () => {
+      const ta = document.createElement('textarea');
+      ta.value = 'inzaagames@upi';
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('Copied: inzaagames@upi');
+      } catch (e) {
+        showToast('UPI: inzaagames@upi');
+      }
+      document.body.removeChild(ta);
+    });
+
+    function advanceToNextLevel(bonusCoins = 0) {
+      closeVictoryScreen();
+      if (bonusCoins > 0) {
+        state.coins += bonusCoins;
+      }
+      state.level++;
+      state.maxUnlockedLevel = Math.max(state.maxUnlockedLevel, state.level);
+      saveProgress();
+      generateLevel(state.level);
+      resizeCanvas();
+    }
+
+    document.getElementById('btnContinueLevel').addEventListener('click', () => advanceToNextLevel(0));
+    document.getElementById('btnVictoryBonusAd').addEventListener('click', () => {
+      sfx.playCorkAndChime();
+      advanceToNextLevel(100);
+      showToast('+100 Bonus Coins Added!');
+    });
+
+    /**
+     * ============================================================================
+     * 11. IMMEDIATE BOOTSTRAP & FAIL-SAFE SPLASH CONTROLLER
+     * ============================================================================
+     */
+    function dismissSplashScreen() {
+      const splash = document.getElementById('splashScreen');
+      if (!splash || splash.classList.contains('hidden')) return;
+      splash.classList.add('hidden');
+      sfx.ensureContext();
+    }
+
+    const splashEl = document.getElementById('splashScreen');
+    if (splashEl) {
+      splashEl.addEventListener('pointerdown', dismissSplashScreen);
+      splashEl.addEventListener('click', dismissSplashScreen);
+    }
+
+    let initialized = false;
+    function bootGame() {
+      if (initialized) return;
+      initialized = true;
+      loadProgress();
+      generateLevel(state.level);
+      resizeCanvas();
+      requestAnimationFrame(renderLoop);
+      setTimeout(dismissSplashScreen, 1400);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootGame);
+    } else {
+      bootGame();
+    }
+    window.addEventListener('load', () => {
+      bootGame();
+      resizeCanvas();
+    });
+  </script>
+</body>
+</html>
