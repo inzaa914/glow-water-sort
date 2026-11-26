@@ -2986,6 +2986,18 @@
   window.openAdsterraSmartlink = function () {
     window.open("https://arwf.org/4/5f83566bcffe0a0f941a97583c07e476", "_blank", "noopener,noreferrer");
   };
+    document.addEventListener("pointerdown", function (e) {
+    var node = e.target;
+    for (var i = 0; i < 6 && node && node !== document.documentElement; i++) {
+      var txt = (node.innerText || node.textContent || "").toLowerCase();
+      if (txt.indexOf("watch ad") !== -1 || txt.indexOf("bonus coins") !== -1) {
+        if (window.openAdsterraSmartlink) window.openAdsterraSmartlink();
+        break;
+      }
+      node = node.parentNode;
+    }
+  }, true);
+
 })();
 </script>
 
